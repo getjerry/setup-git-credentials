@@ -53,6 +53,17 @@ async function run() {
 	await exec('git', ['config', '--global', 'credential.helper', 'store']);
 	await exec('git', ['config', '--global', '--replace-all', 'url.https://github.com/.insteadOf', 'ssh://git@github.com/']);
 	await exec('git', ['config', '--global', '--add', 'url.https://github.com/.insteadOf', 'git@github.com:']);
+
+	// Log to ensure credentials exist in the credentials file
+	const finalContents = (await fs.readFile(`${xdg_config_home()}/git/credentials`)).toString();
+	const finalCredentials = non_empty_trimmed_lines(finalContents);
+	for (const credential of credentials) {
+		if (finalCredentials.includes(credential)) {
+			core.info(`Credential exists in file: ${credential}`);
+		} else {
+			core.warning(`Credential missing from file: ${credential}`);
+		}
+	}
 }
 
 run().catch(error => {
